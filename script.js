@@ -1,53 +1,62 @@
 // Configuració bàsica de Three.js
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+const aspect = window.innerWidth / window.innerHeight;
+const d = 10;
+const camera = new THREE.OrthographicCamera(-d * aspect, d * aspect, d, -d, 1, 1000);
+camera.position.set(10, 10, 10); // Posició inicial de la càmera
+camera.lookAt(new THREE.Vector3(0, 0, 0)); // Mirar cap al centre de l'escena
+
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(window.devicePixelRatio);
+renderer.outputEncoding = THREE.sRGBEncoding; // Correcció gamma
+renderer.toneMapping = THREE.ACESFilmicToneMapping; // Mapeig de to
+renderer.toneMappingExposure = 0.9; // Ajusta segons calgui
 document.body.appendChild(renderer.domElement);
 
 // Canviar el color de fons a un color pastel
 renderer.setClearColor(0xfff0f0); // Color pastel (rosat clar)
 
-// Afegir llum ambiental
-const ambientLight = new THREE.AmbientLight(0xffffff, 0.4); // Llum ambiental
+// Afegir llum ambiental suau
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.4); // Llum ambiental suau
 scene.add(ambientLight);
 
-// Afegir llum direccional
-const directionalLight1 = new THREE.DirectionalLight(0xffffff, 1);
-directionalLight1.position.set(1, 1, 0.5).normalize();
-scene.add(directionalLight1);
+// Funció per crear una rodona negra
+function addBlackDot(position) {
+    const geometry = new THREE.SphereGeometry(0.1, 32, 32);
+    const material = new THREE.MeshBasicMaterial({ color: 0x000000 });
+    const sphere = new THREE.Mesh(geometry, material);
+    sphere.position.copy(position);
+    scene.add(sphere);
+}
 
-const directionalLight2 = new THREE.DirectionalLight(0xffffff, 0.5);
-directionalLight2.position.set(-1, 1, 0.5).normalize();
-scene.add(directionalLight2);
+// Afegir llum direccional zenital
+const directionalLightTop = new THREE.DirectionalLight(0xffffff, 0.4);
+directionalLightTop.position.set(0, 10, 0);
+scene.add(directionalLightTop);
+addBlackDot(directionalLightTop.position);
 
-const directionalLight3 = new THREE.DirectionalLight(0xffffff, 0.5);
-directionalLight3.position.set(0.5, 1, 1).normalize();
-scene.add(directionalLight3);
+// Afegir llum direccional en l'eix X
+const directionalLightX = new THREE.DirectionalLight(0xffffff, 0.4);
+directionalLightX.position.set(10, 0, 0);
+scene.add(directionalLightX);
+addBlackDot(directionalLightX.position);
 
-const directionalLight4 = new THREE.DirectionalLight(0xffffff, 0.5);
-directionalLight4.position.set(0.5, 1, -1).normalize();
-scene.add(directionalLight4);
+// Afegir llum direccional en l'eix Y
+const directionalLightY = new THREE.DirectionalLight(0xffffff, 0.4);
+directionalLightY.position.set(0, 0, 10);
+scene.add(directionalLightY);
+addBlackDot(directionalLightY.position);
 
 // Carregar el model GLTF
 const loader = new THREE.GLTFLoader();
 loader.load('model/room.glb', function (gltf) {
+    gltf.scene.rotation.y = -Math.PI / 2; // Rotar el model 90 graus en sentit horari
     scene.add(gltf.scene);
-    gltf.scene.position.set(0, 0, 0);
-    gltf.scene.traverse(function (node) {
-        if (node.isMesh) {
-            node.castShadow = true;
-            node.receiveShadow = true;
-        }
-    });
     animate();
 }, undefined, function (error) {
     console.error(error);
 });
-
-// Configurar la càmera
-camera.position.set(0, 1.6, 3);
 
 // Controls per l'usuari (zoom i moviment)
 const controls = new THREE.OrbitControls(camera, renderer.domElement);
@@ -55,6 +64,7 @@ controls.enableDamping = true;
 controls.dampingFactor = 0.25;
 controls.screenSpacePanning = false;
 controls.maxPolarAngle = Math.PI / 2;
+controls.update();
 
 // Funció d'animació
 function animate() {
@@ -68,6 +78,9 @@ window.addEventListener('resize', function () {
     const width = window.innerWidth;
     const height = window.innerHeight;
     renderer.setSize(width, height);
-    camera.aspect = width / height;
+    camera.left = -d * width / height;
+    camera.right = d * width / height;
+    camera.top = d;
+    camera.bottom = -d;
     camera.updateProjectionMatrix();
 });
