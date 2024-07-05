@@ -1,3 +1,4 @@
+// script.js
 // Configuració bàsica de Three.js
 const scene = new THREE.Scene();
 const aspect = window.innerWidth / window.innerHeight;
@@ -48,11 +49,25 @@ directionalLightY.position.set(0, 0, 10);
 scene.add(directionalLightY);
 addBlackDot(directionalLightY.position);
 
+let creeperHead, enderHead, skeletonHead;
+
 // Carregar el model GLTF
 const loader = new THREE.GLTFLoader();
 loader.load('model/room.glb', function (gltf) {
-    gltf.scene.rotation.y = -Math.PI / 2; // Rotar el model 90 graus en sentit horari
     scene.add(gltf.scene);
+
+    // Suposant que els models estan nomenats correctament dins del GLTF
+    creeperHead = gltf.scene.getObjectByName('creeper');
+    enderHead = gltf.scene.getObjectByName('ender');
+    skeletonHead = gltf.scene.getObjectByName('skeleton');
+
+    // Mostrar només el Creeper Head per defecte
+    if (creeperHead) creeperHead.visible = true;
+    if (enderHead) enderHead.visible = false;
+    if (skeletonHead) skeletonHead.visible = false;
+
+    // Rotar el model 90 graus en sentit horari
+
     animate();
 }, undefined, function (error) {
     console.error(error);
@@ -63,8 +78,26 @@ const controls = new THREE.OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.25;
 controls.screenSpacePanning = false;
-controls.maxPolarAngle = Math.PI / 2;
 controls.update();
+
+// Funció per alternar la visibilitat dels models amb un clic
+function toggleHeads() {
+    if (creeperHead && enderHead && skeletonHead) {
+        if (creeperHead.visible) {
+            creeperHead.visible = false;
+            enderHead.visible = true;
+        } else if (enderHead.visible) {
+            enderHead.visible = false;
+            skeletonHead.visible = true;
+        } else if (skeletonHead.visible) {
+            skeletonHead.visible = false;
+            creeperHead.visible = true;
+        }
+    }
+}
+
+// Afegir Event Listener per al clic
+window.addEventListener('click', toggleHeads);
 
 // Funció d'animació
 function animate() {
