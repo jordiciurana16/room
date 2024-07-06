@@ -91,8 +91,14 @@ audioLoader.load('assets/sound/skeleton.mp3', function(buffer) {
 });
 
 function onMouseClick(event) {
-    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-    mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
+    event.preventDefault(); // Prevenir comportament per defecte
+    if (event.touches) { // Si es tracta d'un esdeveniment de tacte, obtenir les coordenades del primer toc
+        mouse.x = (event.touches[0].clientX / window.innerWidth) * 2 - 1;
+        mouse.y = - (event.touches[0].clientY / window.innerHeight) * 2 + 1;
+    } else { // Sinó, obtenir les coordenades del clic
+        mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+        mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
+    }
 
     raycaster.setFromCamera(mouse, camera);
 
@@ -133,6 +139,7 @@ function onMouseClick(event) {
 }
 
 window.addEventListener('click', onMouseClick);
+window.addEventListener('touchstart', onMouseClick);
 
 function animate() {
     requestAnimationFrame(animate);
