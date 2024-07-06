@@ -59,19 +59,40 @@ controls.update();
 const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
 
+// Afegir una variable per rastrejar l'estat actual del clic sobre el 'creeper'
 let creeperClickState = 0; // 0 = Mostra Ender, 1 = Mostra Skeleton, 2 = Torna a Creeper
 
-function onPointerDown(event) {
-    let clientX = event.clientX;
-    let clientY = event.clientY;
+// Crear objectes de so i carregar els fitxers d'àudio
+const listener = new THREE.AudioListener();
+camera.add(listener);
 
-    if (event.touches) {
-        clientX = event.touches[0].clientX;
-        clientY = event.touches[0].clientY;
-    }
+const soundCreeper = new THREE.Audio(listener);
+const soundEnder = new THREE.Audio(listener);
+const soundSkeleton = new THREE.Audio(listener);
 
-    mouse.x = (clientX / window.innerWidth) * 2 - 1;
-    mouse.y = - (clientY / window.innerHeight) * 2 + 1;
+const audioLoader = new THREE.AudioLoader();
+
+audioLoader.load('assets/sound/creeper.mp3', function(buffer) {
+    soundCreeper.setBuffer(buffer);
+    soundCreeper.setLoop(false);
+    soundCreeper.setVolume(0.5);
+});
+
+audioLoader.load('assets/sound/ender.mp3', function(buffer) {
+    soundEnder.setBuffer(buffer);
+    soundEnder.setLoop(false);
+    soundEnder.setVolume(0.5);
+});
+
+audioLoader.load('assets/sound/skeleton.mp3', function(buffer) {
+    soundSkeleton.setBuffer(buffer);
+    soundSkeleton.setLoop(false);
+    soundSkeleton.setVolume(0.5);
+});
+
+function onMouseClick(event) {
+    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
 
     raycaster.setFromCamera(mouse, camera);
 
@@ -80,33 +101,38 @@ function onPointerDown(event) {
     if (intersects.length > 0) {
         let selectedObject = intersects[0].object;
 
+        // Ascendir en la jerarquia fins trobar l'objecte 'creeper'
         while (selectedObject.parent && selectedObject.parent.type !== 'Scene' && selectedObject.name !== 'creeper') {
             selectedObject = selectedObject.parent;
         }
 
         if (selectedObject.name === 'creeper') {
-            if (creeperClickState === 0) {
+            // Comprovar l'estat actual i canviar la visibilitat dels objectes apropiadament
+            if (creeperClickState === 0) { // Primer clic: Mostra Ender
                 selectedObject.visible = false;
                 const enderObject = scene.getObjectByName('ender');
                 if (enderObject) enderObject.visible = true;
-            } else if (creeperClickState === 1) {
+                soundCreeper.play();
+            } else if (creeperClickState === 1) { // Segon clic: Mostra Skeleton
                 const enderObject = scene.getObjectByName('ender');
                 if (enderObject) enderObject.visible = false;
                 const skeletonObject = scene.getObjectByName('skeleton');
                 if (skeletonObject) skeletonObject.visible = true;
-            } else if (creeperClickState === 2) {
+                soundEnder.play();
+            } else if (creeperClickState === 2) { // Tercer clic: Torna a Creeper
                 const skeletonObject = scene.getObjectByName('skeleton');
                 if (skeletonObject) skeletonObject.visible = false;
                 selectedObject.visible = true;
+                soundSkeleton.play();
             }
 
+            // Incrementar l'estat del clic i reiniciar si necessari
             creeperClickState = (creeperClickState + 1) % 3;
         }
     }
 }
 
-window.addEventListener('click', onPointerDown);
-window.addEventListener('touchstart', onPointerDown);
+window.addEventListener('click', onMouseClick);
 
 function animate() {
     requestAnimationFrame(animate);
