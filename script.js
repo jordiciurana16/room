@@ -72,23 +72,25 @@ const soundSkeleton = new THREE.Audio(listener);
 
 const audioLoader = new THREE.AudioLoader();
 
-audioLoader.load('assets/sound/creeper.mp3', function(buffer) {
-    soundCreeper.setBuffer(buffer);
-    soundCreeper.setLoop(false);
-    soundCreeper.setVolume(0.5);
-});
+function loadSounds() {
+    audioLoader.load('assets/sound/creeper.mp3', function(buffer) {
+        soundCreeper.setBuffer(buffer);
+        soundCreeper.setLoop(false);
+        soundCreeper.setVolume(0.5);
+    });
 
-audioLoader.load('assets/sound/ender.mp3', function(buffer) {
-    soundEnder.setBuffer(buffer);
-    soundEnder.setLoop(false);
-    soundEnder.setVolume(0.5);
-});
+    audioLoader.load('assets/sound/ender.mp3', function(buffer) {
+        soundEnder.setBuffer(buffer);
+        soundEnder.setLoop(false);
+        soundEnder.setVolume(0.5);
+    });
 
-audioLoader.load('assets/sound/skeleton.mp3', function(buffer) {
-    soundSkeleton.setBuffer(buffer);
-    soundSkeleton.setLoop(false);
-    soundSkeleton.setVolume(0.5);
-});
+    audioLoader.load('assets/sound/skeleton.mp3', function(buffer) {
+        soundSkeleton.setBuffer(buffer);
+        soundSkeleton.setLoop(false);
+        soundSkeleton.setVolume(0.5);
+    });
+}
 
 function onMouseClick(event) {
     event.preventDefault(); // Prevenir comportament per defecte
@@ -138,8 +140,13 @@ function onMouseClick(event) {
     }
 }
 
-window.addEventListener('click', onMouseClick);
-window.addEventListener('touchstart', onMouseClick);
+function init() {
+    loadSounds();
+    window.addEventListener('click', onMouseClick);
+    window.addEventListener('touchstart', onMouseClick);
+}
+
+init();
 
 function animate() {
     requestAnimationFrame(animate);
